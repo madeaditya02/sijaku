@@ -18,8 +18,8 @@ class MahasiswaFactory extends Factory
     {
         return [
             'angkatan' => 2023,
-            'fakultas' => 'MIPA',
-            'program_studi' => 'Informatika',
+            // 'fakultas' => 'MIPA',
+            // 'program_studi' => 'Informatika',
             'nomor_telpon' => '08973891362',
             'tempat_lahir' => 'Denpasar',
             'tanggal_lahir' => '2004-10-02',

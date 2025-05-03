@@ -20,7 +20,11 @@ class User extends Authenticatable
     protected $fillable = [
         'email',
         'password',
+        'email_verified_at',
+        'profile_picture'
     ];
+
+    protected $with = ['mahasiswa', 'dosen', 'admin'];
 
     /**
      * Get the mahasiswa associated with the User
