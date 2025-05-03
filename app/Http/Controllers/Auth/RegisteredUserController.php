@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use App\Rules\AccountNotExist;
 use Illuminate\Validation\Rules;
