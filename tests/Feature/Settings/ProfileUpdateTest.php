@@ -10,16 +10,16 @@ class ProfileUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    // public function test_profile_page_is_displayed()
-    // {
-    //     $user = User::factory()->create();
+    public function test_profile_page_is_displayed()
+    {
+        $user = User::factory()->create();
 
-    //     $response = $this
-    //         ->actingAs($user)
-    //         ->get('/settings/profile');
+        $response = $this
+            ->actingAs($user)
+            ->get('/settings/profile');
 
-    //     $response->assertOk();
-    // }
+        $response->assertOk();
+    }
 
     // public function test_profile_information_can_be_updated()
     // {
