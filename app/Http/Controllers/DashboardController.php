@@ -15,7 +15,24 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
+    {
+        if ($request->user()->admin) {
+            $perkuliahanHariIni = Perkuliahan::with(['jadwal.mataKuliahTawar', 'jadwal.ruangan'])->whereDate('waktu_mulai', '>=', today())->whereDate('waktu_mulai', '<=', today()->endOfDay())->get();
+            return Inertia::render('dashboard/DashboardAdmin', [
+                'total_kelas' => $perkuliahanHariIni->count(),
+                'total_terkonfirmasi' => $perkuliahanHariIni->filter(fn ($kuliah) => $kuliah->status == 'Hadir' || $kuliah->status == 'Rescheduled')->count(),
+                'total_belum_konfirm' => $perkuliahanHariIni->filter(fn ($kuliah) => $kuliah->status == 'Pending')->count(),
+                'perkuliahan_belum_konfirm' => PerkuliahanResource::collection($perkuliahanHariIni->filter(fn ($kuliah) => $kuliah->status == 'Pending'))
+            ]);
+        } elseif ($request->user()->dosen) {
+            // Dosen
+        } else {
+            return Inertia::render('dashboard/DashboardMahasiswa');
+        }
+    }
+
+    public function test()
     {
         // Mahasiswa
         $user = User::find(1);

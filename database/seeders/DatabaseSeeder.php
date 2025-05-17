@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
 
         $dosen1 = Dosen::create([
             'nip' => '111',
-            'nama' => 'Riyani Astarani',
+            'nama' => 'Riyani Astarani S.Kom., M.Kom.',
             'jenis_kelamin' => 'Perempuan',
             'nomor_telpon' => '08973891362',
             'user_id' => 3
@@ -83,7 +83,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $kelas = ["A", "B", "C"];
-        $tahun_ajaran = [[2023, 2024], [2024, 2025]];
+        $tahun_ajaran = [[2023, 2024]];
+        // $tahun_ajaran = [[2023, 2024], [2024, 2025]];
         $semester = ['Ganjil', 'Genap'];
         $matkul_tawar = [];
         foreach ($tahun_ajaran as $tahun) {
@@ -102,7 +103,8 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $mhs1->krs()->attach([$matkul_tawar[0]->id, $matkul_tawar[3]->id, $matkul_tawar[7]->id, $matkul_tawar[10]->id, $matkul_tawar[40]->id, $matkul_tawar[43]->id]);
+        // $mhs1->krs()->attach([$matkul_tawar[0]->id, $matkul_tawar[3]->id, $matkul_tawar[7]->id, $matkul_tawar[10]->id, $matkul_tawar[40]->id, $matkul_tawar[43]->id]);
+        $mhs1->krs()->attach([$matkul_tawar[0]->id, $matkul_tawar[3]->id, $matkul_tawar[7]->id, $matkul_tawar[10]->id]);
 
         for ($i=1; $i <= 2; $i++) { 
             for ($j=1; $j <= 4; $j++) { 
@@ -156,7 +158,6 @@ class DatabaseSeeder extends Seeder
         $tanggal = "2023-09-01";
         $date = Carbon::parse($tanggal);
         $sunday = $date->copy()->startOfWeek(Carbon::SUNDAY);
-
         // Kalau bulan Senin itu beda dengan bulan tanggal input, cari Senin berikutnya
         if ($sunday->month !== $date->month) {
             $sunday = $sunday->addWeek();

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('jadwal', function (Blueprint $table) {
             $table->id('id_jadwal');
-            $table->unsignedBigInteger('id_matkul_tawar');
+            $table->unsignedBigInteger('id_matkul_tawar')->unique();
             $table->integer('hari');
             $table->time('jam_mulai');
             $table->time('jam_selesai');

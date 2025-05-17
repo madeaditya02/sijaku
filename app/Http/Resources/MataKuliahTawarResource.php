@@ -19,6 +19,7 @@ class MataKuliahTawarResource extends JsonResource
         // return parent::toArray($request);
         return [
             'id_matkul' => $this->id,
+            'kode_matkul' => $this->mata_kuliah->kode,
             'nama_matkul' => $this->mata_kuliah->nama_matakuliah,
             'semester' => $this->mata_kuliah->semester,
             'semester_ajaran' => [
@@ -32,6 +33,7 @@ class MataKuliahTawarResource extends JsonResource
                 'sks_praktikum' => $this->mata_kuliah->sks_praktikum,
             ],
             'jenis_matakuliah' => $this->mata_kuliah->jenis_matakuliah,
+            'kelas' => $this->kelas,
             'dosen' => new DosenResource($this->whenLoaded('dosen')),
             'jadwal' => new JadwalResource($this->whenLoaded('jadwal'))
         ];

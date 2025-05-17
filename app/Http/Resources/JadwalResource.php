@@ -20,7 +20,11 @@ class JadwalResource extends JsonResource
             'hari' => $this->hari,
             'jam_mulai' => $this->jam_mulai,
             'jam_selesai' => $this->jam_selesai,
-            'ruangan' => $this->ruangan->nama_ruangan,
+            'ruangan' => [
+                'id_ruangan' => $this->ruangan->id_ruangan,
+                'nama_ruangan' => $this->ruangan->nama_ruangan,
+                'kapasitas' => $this->ruangan->kapasitas,
+            ],
         ];
     }
 }

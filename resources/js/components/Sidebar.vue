@@ -25,12 +25,15 @@ const confirmLogout = ref(false)
     </div>
     <div class="mt-5 flex flex-col justify-between grow">
       <div>
-        <SidebarLink menu="Dashboard" href="/" active />
-        <SidebarLink menu="Activity" href="/activities" v-if="role == 'Admin'" />
-        <SidebarLink menu="Schedule" href="/schedules" />
-        <SidebarLink menu="KRS" href="/krs" v-if="role == 'Mahasiswa'" />
-        <SidebarLink menu="Mata Kuliah" href="/mata-kuliah" v-if="role == 'Admin'" />
-        <SidebarLink menu="Mahasiswa" href="/students" v-if="role == 'Admin'" />
+        <SidebarLink menu="Dashboard" href="/" :active="page.url == '/'" />
+        <SidebarLink menu="Activity" href="/activities" v-if="role == 'Admin'"
+          :active="page.url.startsWith('/activities')" />
+        <SidebarLink menu="Schedule" href="/schedules" :active="page.url.startsWith('/schedules')" />
+        <SidebarLink menu="KRS" href="/krs" v-if="role == 'Mahasiswa'" :active="page.url.startsWith('/krs')" />
+        <SidebarLink menu="Mata Kuliah" href="/mata-kuliah" v-if="role == 'Admin'"
+          :active="page.url.startsWith('/mata-kuliah')" />
+        <SidebarLink menu="Mahasiswa" href="/students" v-if="role == 'Admin'"
+          :active="page.url.startsWith('/students')" />
       </div>
       <div class="h-full flex flex-col justify-end">
         <button class="inline-flex gap-3 items-center w-full cursor-pointer" @click="confirmLogout = true">

@@ -63,7 +63,9 @@
 
   /* --color-primary: #012B89; */
   /* --color-secondary: #4665A8; */
+  --color-stroke-grey: #BDBDBD;
   --color-tertiary: #D8EFFF;
+  --color-tertiary-foreground: var(--primary);
   --color-danger: #FF0000;
   --color-accent-red: #BD2915;
   --color-accent-green: #A7BA3C;
