@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Dosen;
 use App\Models\Jadwal;
 use App\Models\Ruangan;
 use App\Models\MataKuliah;
+use App\Models\Perkuliahan;
 use Illuminate\Http\Request;
 use App\Models\MataKuliahTawar;
 use App\Http\Controllers\Controller;
@@ -31,13 +34,47 @@ class ScheduleController extends Controller
                 $smt = semesterIni();
             }
             $semuaSmt = semuaSemester();
-            $matkulSemesterIni = MataKuliahTawarResource::collection(MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->get());
+            $query = $request->only(['semester', 'tahun_1', 'tahun_2', 'show']);
+            // $matkulSemesterIni = MataKuliahTawarResource::collection(MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->paginate($request->show ?? 6)->appends($query));
+            $matkulSemesterIni = MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->paginate(function ($total) use ($request) {
+                $perPage = $request->get('show', 6);
+                if($perPage == 'all')
+                    return $total;
+                return $perPage;
+            })->appends($query)->toResourceCollection();
+            // $matkulSemesterIni = $request->show == 'all' ? MataKuliahTawarResource::collection($matkulSemesterIni->get()) : $matkulSemesterIni->paginate($request->show ?? 6)->appends($query)->toResourceCollection();
             // $matkulSemesterIni = MataKuliahTawarResource::collection(MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->get());
             return Inertia::render('schedules/ScheduleAdmin', [
                 'semester' => $semuaSmt,
                 'semesterIni' => $smt,
                 'matkulSemester' => $matkulSemesterIni,
                 'listRuangan' => Ruangan::all(['id_ruangan', 'nama_ruangan', 'kapasitas'])
+            ]);
+        } elseif (auth()->user()->dosen) {
+            $dosen = auth()->user()->dosen;
+            $start = $request->start ? Carbon::parse($request->start) : now()->startOfWeek();
+            $end = $request->end ? Carbon::parse($request->end) : now()->endOfWeek();
+            $perkuliahan = PerkuliahanResource::collection(Perkuliahan::whereHas('jadwal.mataKuliahTawar.dosen', function ($query) use ($dosen) {
+                $query->where('nip', $dosen->nip);
+            })->where(fn ($query) => $query->whereDate('waktu_mulai', '>=', $start)->whereDate('waktu_mulai', '<=', $end))
+            ->orWhere(fn ($query) => $query->whereDate('rescheduled_time_start', '>=', $start)->whereDate('rescheduled_time_end', '<=', $end))->orderBy('waktu_mulai')->orderBy('rescheduled_time_start')->get());
+            return Inertia::render('schedules/dosen/ScheduleDosen', [
+                'perkuliahan' => $perkuliahan,
+                'start' => ['year' => $start->year, 'month' => $start->month, 'day' => $start->day],
+                'end' => ['year' => $end->year, 'month' => $end->month, 'day' => $end->day],
+            ]);
+        } else {
+            $mahasiswa = auth()->user()->mahasiswa;
+            $start = $request->start ? Carbon::parse($request->start) : now()->startOfWeek();
+            $end = $request->end ? Carbon::parse($request->end) : now()->endOfWeek();
+            $perkuliahan = PerkuliahanResource::collection(Perkuliahan::whereHas('jadwal.mataKuliahTawar.krs', function ($query) use ($mahasiswa) {
+                $query->where('mahasiswa.nim', $mahasiswa->nim);
+            })->where(fn ($query) => $query->whereDate('waktu_mulai', '>=', $start)->whereDate('waktu_mulai', '<=', $end))
+            ->orWhere(fn ($query) => $query->whereDate('rescheduled_time_start', '>=', $start)->whereDate('rescheduled_time_end', '<=', $end))->orderBy('waktu_mulai')->orderBy('rescheduled_time_start')->get());
+            return Inertia::render('schedules/ScheduleMahasiswa', [
+                'perkuliahan' => $perkuliahan,
+                'start' => ['year' => $start->year, 'month' => $start->month, 'day' => $start->day],
+                'end' => ['year' => $end->year, 'month' => $end->month, 'day' => $end->day],
             ]);
         }
     }
@@ -67,6 +104,7 @@ class ScheduleController extends Controller
             'tahun_ajaran_pertama' => ['required', 'integer'],
             'tahun_ajaran_kedua' => ['required', 'integer'],
             'kelas' => ['required', 'integer'],
+            'kuota' => ['required', 'integer'],
         ]);
         $data = [];
         foreach ($form['mata_kuliah'] as $matkul) {
@@ -76,6 +114,7 @@ class ScheduleController extends Controller
                     'tahun_ajaran_pertama' => $form['tahun_ajaran_pertama'],
                     'tahun_ajaran_kedua' => $form['tahun_ajaran_kedua'],
                     'kelas' => chr($i),
+                    'kuota' => $form['kuota'],
                     'semester' => $form['semester'],
                     'dosen_ketua' => $form['dosen'],
                     'created_at' => now(),
@@ -95,7 +134,23 @@ class ScheduleController extends Controller
             'jam_selesai' => ['required'],
             'id_ruangan' => ['required'],
         ]);
-        $form['id_matkul_tawar'] = $matkul;
+        $matkul = MataKuliahTawar::findOrFail($matkul);
+        $adaJadwal = Jadwal::where('hari', $form['hari'])
+        ->where(function ($q) use ($form) {
+            $q->where(function ($query) use ($form) {
+                $query->where('jam_mulai', '<', $form['jam_selesai'])->where('jam_selesai', '>', $form['jam_selesai']);
+            })->orWhere(function ($query) use ($form) {
+                $query->where('jam_mulai', '<', $form['jam_mulai'])->where('jam_selesai', '>', $form['jam_mulai']);
+            });
+        })->whereHas('mataKuliahTawar', function ($query) use ($matkul, $request) {
+            $query->where('mata_kuliah_tawar.dosen_ketua', $matkul->dosen_ketua)->where('semester', $request->semester)->where('tahun_ajaran_pertama', $request->tahun_ajaran_pertama)->where('tahun_ajaran_kedua', $request->tahun_ajaran_kedua);
+        })->count();
+        // dd($adaJadwal);
+        if ($adaJadwal > 0) {
+            // throw new Exception("Ada jadwal lain", 1);
+            return back()->withErrors(['jadwal' => 'Sudah ada jadwal lain di waktu tersebut']);
+        }
+        $form['id_matkul_tawar'] = $matkul->id;
         Jadwal::upsert($form, ['id_matkul_tawar']);
         return to_route('schedules')->with('alert', ['title' => 'Jadwal mata kuliah.', 'text' => 'Jadwal mata kuliah berhasil diubah.', 'type' => 'success']);
     }

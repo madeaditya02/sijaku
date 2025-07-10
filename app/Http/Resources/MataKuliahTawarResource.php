@@ -35,7 +35,10 @@ class MataKuliahTawarResource extends JsonResource
             'jenis_matakuliah' => $this->mata_kuliah->jenis_matakuliah,
             'kelas' => $this->kelas,
             'dosen' => new DosenResource($this->whenLoaded('dosen')),
-            'jadwal' => new JadwalResource($this->whenLoaded('jadwal'))
+            'jadwal' => new JadwalResource($this->whenLoaded('jadwal')),
+            'kuota' => $this->kuota,
+            'jumlah_mahasiswa' => $this->whenCounted('krs'),
+            'mahasiswa' => MahasiswaResource::collection($this->whenLoaded('krs'))
         ];
     }
 }

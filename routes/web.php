@@ -2,9 +2,13 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KRSController;
+use App\Http\Controllers\DosenController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\MataKuliahController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('home');
@@ -17,8 +21,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::controller(ActivityController::class)->group(function () {
         Route::get('/activities', 'index')->name('activities');
+        Route::get('/activities/{activity}', 'show')->name('detail-activity');
+        Route::post('/activities/{activity}/confirm', 'confirm')->name('confirm-activity');
         Route::post('/activities/generate', 'generate');
     });
+    Route::controller(KRSController::class)->group(function () {
+        Route::get('/krs', 'index');
+        Route::get('/krs/ajukan', 'ajukan');
+        Route::get('/krs/details/{id}', 'detail');
+        Route::post('/krs/ajukan/{id}', 'pilihMatkul');
+    });
+    Route::resource('/students', MahasiswaController::class)->except(['show']);
+    Route::resource('/lecturers', DosenController::class)->except(['show']);
+    Route::resource('/mata-kuliah', MataKuliahController::class)->except(['show']);
 });
 
 // Route::get('dashboard', function () {

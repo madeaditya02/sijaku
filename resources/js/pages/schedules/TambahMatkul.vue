@@ -50,12 +50,14 @@ const form = useForm<{
   tahun_ajaran_kedua: number,
   mata_kuliah: any[],
   dosen: string,
-  kelas: number | undefined
+  kelas: number | undefined,
+  kuota: number | undefined
 }>({
   mata_kuliah: [],
   dosen: '',
   ...props.semester,
-  kelas: undefined
+  kelas: undefined,
+  kuota: undefined
 })
 </script>
 <template>
@@ -107,12 +109,12 @@ const form = useForm<{
               </span>
             </div>
           </ComboboxAnchor>
-          <ComboboxList class="" align="start">
+          <ComboboxList class="w-full" align="start">
             <ComboboxEmpty class="w-full">
               Dosen tidak ditemukan.
             </ComboboxEmpty>
 
-            <ComboboxGroup class="">
+            <ComboboxGroup class="w-full">
               <ComboboxItem @select="() => form.dosen = dosen.nip" v-for="dosen in listDosen" :key="dosen.nip"
                 :value="dosen.nip" class="w-full">
                 {{ dosen.nama }}
@@ -162,6 +164,11 @@ const form = useForm<{
         <Label for="mata_kuliah" class="mb-2">Jumlah Kelas</Label>
         <Input type="number" v-model="form.kelas" />
         <InputError class="mt-1" :message="form.errors.kelas" />
+      </div>
+      <div class="col-span-6">
+        <Label for="kuota" class="mb-2">Kuota per Kelas</Label>
+        <Input type="number" v-model="form.kuota" />
+        <InputError class="mt-1" :message="form.errors.kuota" />
       </div>
       <div class="col-span-12">
         <Button>Tambah</Button>

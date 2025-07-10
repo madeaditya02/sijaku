@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import AppLayout from '@/layouts/AppLayout.vue';
-import { MataKuliah, Ruangan, Semester } from '@/types/model';
+import { MataKuliah, Ruangan, Semester, Paginator } from '@/types/model';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { Check, Clock, Ellipsis, ExternalLink, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -35,8 +35,16 @@ import {
   DialogHeader,
   DialogTitle,
   // DialogClose
-  // DialogTrigger,
+  DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxList } from '@/components/ui/combobox'
 import InputError from '@/components/InputError.vue';
 import Label from '@/components/ui/label/Label.vue';
@@ -47,15 +55,17 @@ import { PopoverClose } from 'reka-ui';
 const props = defineProps<{
   semesterIni: Semester,
   semester: Semester[],
-  matkulSemester: MataKuliah[],
+  matkulSemester: Paginator<MataKuliah>,
   listRuangan: Ruangan[]
 }>()
+const page = usePage()
+const params = new URLSearchParams(window.location.search)
 const listSemester = ref(props.semester.map(smt => ({ ...smt, id: Object.values(smt).join('-') })))
 const selectedSemesterId = ref(Object.values(props.semesterIni).join('-'))
 const selectedSemester = computed(() => listSemester.value.find((smt) => smt.id == selectedSemesterId.value))
 watch(selectedSemesterId, val => {
   const params = val.split('-')
-  router.get(usePage().url, {
+  router.get(page.url, {
     semester: params[0],
     tahun_1: params[1],
     tahun_2: params[2],
@@ -79,7 +89,7 @@ const formJadwal = useForm<{
   ruangan: undefined,
 })
 function openFormJadwal(id_matkul: number) {
-  const selectedMatkul = props.matkulSemester.find(m => m.id_matkul == id_matkul)?.jadwal
+  const selectedMatkul = props.matkulSemester.data.find(m => m.id_matkul == id_matkul)?.jadwal
   formJadwal.hari = selectedMatkul?.hari
   formJadwal.jam_mulai = selectedMatkul?.jam_mulai
   formJadwal.jam_selesai = selectedMatkul?.jam_selesai
@@ -91,15 +101,32 @@ function formJadwalClosed() {
   editedJadwal.value = null
   formJadwal.reset()
 }
-
+const showQuantity = ref<number | 'all'>(params.get('show') == 'all' ? 'all' : (parseInt(params.get('show')!) ?? 6))
+interface Params {
+  semester?: string | null,
+  tahun_1?: string | null,
+  tahun_2?: string | null,
+  show?: string | null,
+}
+// type Params2 = {
+//   [key: string]: string
+// }
+watch(showQuantity, val => {
+  // const params = new URLSearchParams(window.location.search)
+  const obj: Params = {}
+  for (const key of params.keys())
+    obj[key as keyof Params] = params.get(key)
+  obj.show = val as string
+  router.get('', { ...obj })
+})
 </script>
 <template>
   <AppLayout>
     <h1 class="text-2xl font-medium mb-4">Jadwal Mata Kuliah</h1>
     <div class="flex justify-between">
       <Select v-model="selectedSemesterId" class="bg-white">
-        <SelectTrigger class="w-[280px]">
-          <SelectValue placeholder="Select a timezone" />
+        <SelectTrigger class="w-[240px]">
+          <SelectValue placeholder="Pilih Semester" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -109,15 +136,57 @@ function formJadwalClosed() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Button as-child v-if="matkulSemester.length != 0">
+      <Button as-child v-if="matkulSemester.data.length != 0">
         <Link
           :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
         <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
         </Link>
       </Button>
     </div>
+    <div class="mt-3 flex items-center gap-2">
+      <!-- <Label>Tampil : </Label> -->
+      <Select class="bg-white" v-model="showQuantity">
+        <SelectTrigger class="w-32">
+          <SelectValue placeholder="6" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem :value="6">6</SelectItem>
+            <SelectItem :value="15">15</SelectItem>
+            <SelectItem :value="25">25</SelectItem>
+            <SelectItem :value="50">50</SelectItem>
+            <SelectItem :value="'all'">Semua</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <Dialog>
+        <DialogTrigger>
+          <!-- <Button variant="outline" class="w-26">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="size-4">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+            </svg>
+            Filter
+          </Button> -->
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Filter Data</DialogTitle>
+          </DialogHeader>
+          <form action="">
+            <div>
+              <Label for="">Semester</Label>
+            </div>
+            <DialogFooter>
+              <Button>Filter</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
 
-    <div class="mt-20 text-center" v-if="matkulSemester.length == 0">
+    <div class="mt-20 text-center" v-if="matkulSemester.data.length == 0">
       <h2 class="text-2xl font-medium">Belum ada mata kuliah di semester ini</h2>
       <p class="text-lg mt-4 mb-6">Silahkan tambahkan mata kuliah untuk semester ini serta tentukan jadwalnya.</p>
       <Button size="lg" as-child>
@@ -128,7 +197,7 @@ function formJadwalClosed() {
       </Button>
     </div>
 
-    <div class="mt-6 bg-white border rounded-lg" v-if="matkulSemester.length > 0">
+    <div class="mt-6 bg-white border rounded-lg" v-if="matkulSemester.data.length > 0">
       <Table>
         <TableHeader>
           <TableRow>
@@ -142,7 +211,7 @@ function formJadwalClosed() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="matkul in matkulSemester" :key="matkul.id_matkul">
+          <TableRow v-for="matkul in matkulSemester.data" :key="matkul.id_matkul">
             <TableCell class="font-medium">{{ matkul.kode_matkul }}</TableCell>
             <TableCell>{{ matkul.nama_matkul }}</TableCell>
             <TableCell>{{ matkul.semester }}</TableCell>
@@ -183,6 +252,24 @@ function formJadwalClosed() {
           </TableRow>
         </TableBody>
       </Table>
+      <Pagination v-slot="{ page }" :items-per-page="matkulSemester.meta.per_page" :total="matkulSemester.meta.total"
+        :default-page="matkulSemester.meta.current_page" class="ml-auto justify-end my-4">
+        <PaginationContent v-slot="{ items }">
+          <PaginationPrevious />
+
+          <template v-for="(item, index) in items" :key="index">
+            <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === page" as-child>
+              <Link :href="matkulSemester.meta.links[index + 1].url">
+              {{ item.value }}
+              </Link>
+            </PaginationItem>
+          </template>
+
+          <PaginationEllipsis :index="4" />
+
+          <PaginationNext />
+        </PaginationContent>
+      </Pagination>
     </div>
 
     <Dialog :open="!!editedJadwal" @update:open="opened => opened ? '' : formJadwalClosed()">
@@ -245,11 +332,23 @@ function formJadwalClosed() {
           </div>
         </div>
         <DialogFooter>
-          <Button @click="formJadwal.transform(data => ({ ...data, id_ruangan: formJadwal.ruangan?.id_ruangan })).post(`/schedules/${editedJadwal}/jadwal`, {
+          <Button @click="formJadwal.transform(data => ({
+            ...data,
+            id_ruangan: formJadwal.ruangan?.id_ruangan,
+            semester: semesterIni.semester,
+            tahun_ajaran_pertama: semesterIni.tahun_ajaran_pertama,
+            tahun_ajaran_kedua: semesterIni.tahun_ajaran_kedua,
+          })).post(`/schedules/${editedJadwal}/jadwal`, {
             onSuccess() {
               formJadwalClosed()
               toast.success('Jadwal Mata Kuliah', { description: 'Jadwal mata kuliah berhasil diubah' })
               // router.reload()
+            },
+            onError(err) {
+              if (err.jadwal) {
+                formJadwalClosed()
+                toast.error('Jadwal mata kuliah gagal diubah', { description: 'Terdapat jadwal lain di waktu tersebut' })
+              }
             }
           })">
             Simpan Jadwal

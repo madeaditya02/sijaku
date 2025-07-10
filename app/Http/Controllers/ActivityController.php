@@ -8,6 +8,7 @@ use App\Models\Jadwal;
 use App\Models\Perkuliahan;
 use Illuminate\Http\Request;
 use App\Models\MataKuliahTawar;
+use App\Http\Resources\MahasiswaResource;
 use App\Http\Resources\PerkuliahanResource;
 use App\Http\Resources\MataKuliahTawarResource;
 
@@ -46,6 +47,13 @@ class ActivityController extends Controller
             ]);
         }
     }
+
+    public function show(Perkuliahan $activity)
+    {
+        $activity->load(['jadwal.mataKuliahTawar.dosen', 'jadwal.mataKuliahTawar.krs']);
+        return Inertia::render('schedules/dosen/DetailActivity', ['kuliah' => new PerkuliahanResource($activity), 'mahasiswa' => MahasiswaResource::collection($activity->jadwal->mataKuliahTawar->krs)]);
+    }
+
     public function generate(Request $request)
     {
         $smt = explode('-', $request->semester);
@@ -98,5 +106,40 @@ class ActivityController extends Controller
         // }
         Perkuliahan::insert($perkuliahan);
         return to_route('activities')->with('alert', ['title' => 'Perkuliahan berhasil dibuat.', 'text' => "Data perkuliahan di semester $smt[0] $smt[1]/$smt[2] berhasil dibuat.", 'type' => 'success']);
+    }
+
+    public function confirm(Perkuliahan $activity, Request $request)
+    {
+        $rules = [
+            'status_kehadiran' => 'required',
+            'start_date' => 'required',
+            'start_time' => 'required',
+        ];
+        if ($request->status_kehadiran == 'Rescheduled' || $request->status_kehadiran == 'Hadir') {
+            $rules['status_kegiatan'] = 'required';
+        }
+        $data = $request->validate($rules);
+        $activity->load(['jadwal.mataKuliahTawar.mata_kuliah']);
+        if ($data['status_kehadiran'] == 'Rescheduled') {
+            $waktu = Carbon::parse($data['start_date']." ".$data['start_time'].":00");
+            $waktu_string = $waktu->format('Y-m-d h:i:s');
+            // dd($waktu_string);
+            $waktu_end = $waktu->copy()->addMinutes($activity->jadwal->mataKuliahTawar->mata_kuliah->sks * 50);
+            // dd($activity->jadwal->id_jadwal);
+            $exist = Perkuliahan::where('id_jadwal', $activity->jadwal->id_jadwal)->where('waktu_mulai', '<=', $waktu_string)->where('waktu_selesai', '>', $waktu_string)->get();
+            if ($exist->count()) {
+                return back()->withErrors(['start_date' => 'Terdapat kelas lain di waktu tersebut']);
+                // return redirect("/activities/$activity->id")->with('alert', ['title' => 'Status Gagal Diperbarui', 'text' => 'Tidak bisa mereschedule kelas. Terdapat mata kuliah lain pada waktu tersebut.', 'type' => 'error']);
+            }
+            $activity->rescheduled_time_start = $waktu;
+            $activity->rescheduled_time_end = $waktu_end;
+            // $activity->rescheduled_time_start = $waktu->addMinutes();
+        }
+        if ($data['status_kehadiran'] == 'Rescheduled' || $data['status_kehadiran'] == 'Hadir') {
+            $activity->kelas_offline = $data['status_kegiatan'] == "Offline" ? 1 : 0;
+        }
+        $activity->status = $data['status_kehadiran'];
+        $activity->save();
+        return redirect("/?date=".$data['start_date'])->with('alert', ['title' => 'Status Kelas Berhasil Diubah', 'text' => 'Status kehadiran perkuliahan berhasil diubah ke '.$data['status_kehadiran'], 'type' => 'success']);
     }
 }

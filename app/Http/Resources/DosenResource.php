@@ -18,7 +18,7 @@ class DosenResource extends JsonResource
         return [
             'nip' => $this->nip,
             'nama' => $this->nama,
-            'nomor_telepon' => $this->nomor_telepon,
+            'nomor_telepon' => $this->nomor_telpon,
         ];
     }
 }

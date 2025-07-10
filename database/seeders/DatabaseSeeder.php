@@ -96,7 +96,8 @@ class DatabaseSeeder extends Seeder
                         'tahun_ajaran_kedua' => $tahun[1],
                         'semester' => $mtkl->semester % 2 == 0 ? "Genap" : "Ganjil",
                         'dosen_ketua' => $dosen1->nip,
-                        'kelas' => $k
+                        'kelas' => $k,
+                        'kuota' => 25
                     ]);
                     array_push($matkul_tawar, $m);
                 }

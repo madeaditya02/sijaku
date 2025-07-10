@@ -149,7 +149,7 @@ const confirmGenerate = ref(false)
     </div>
 
     <ConfirmModal :open="confirmGenerate" title="Anda yakin?" @update-open="open => confirmGenerate = open"
-      @confirm="router.post('/activities/generate', { semester: selectedSemesterId })"
+      @confirm="router.post('/activities/generate', { semester: selectedSemesterId }, { onSuccess: () => confirmGenerate = false })"
       text="Dengan mengklik 'Ya', data perkuliahan akan dibuat untuk semua mata kuliah selama 16 minggu dimulai dari tanggal 1 Maret." />
   </AppLayout>
 </template>

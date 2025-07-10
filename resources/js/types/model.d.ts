@@ -7,11 +7,23 @@ export interface Mahasiswa {
   'nomor_telepon': string,
   'user'?: any,
 }
+export interface MahasiswaFull extends Mahasiswa {
+  agama: string,
+  jenis_kelamin: string,
+  tempat_lahir: string,
+  tanggal_lahir: string,
+  nomor_telpon: string,
+}
 
 export interface Dosen {
   nip: string,
   nama: string,
   nomor_telepon: string,
+}
+
+export interface DosenFull extends Dosen {
+  jenis_kelamin: string
+  nomor_telpon: string,
 }
 
 export interface Jadwal {
@@ -22,23 +34,28 @@ export interface Jadwal {
   'ruangan': Ruangan,
 }
 
-export interface MataKuliah {
+export interface MataKuliahBase {
   'id_matkul': number,
   'kode_matkul': string,
   'nama_matkul': string,
   'semester': number,
-  'semester_ajaran': {
-    'semester': number,
-    'tahun_ajaran_pertama': number,
-    'tahun_ajaran_kedua': number,
-  },
   'sks': {
     'jumlah_sks': number,
     'sks_tatap_muka': number,
     'sks_praktikum': number,
   },
-  'kelas': string,
   'jenis_matakuliah': string,
+}
+
+export interface MataKuliah extends MataKuliahBase {
+  'semester_ajaran': {
+    'semester': number,
+    'tahun_ajaran_pertama': number,
+    'tahun_ajaran_kedua': number,
+  },
+  'kelas': string,
+  'kuota': number,
+  'jumlah_mahasiswa': number,
   'dosen'?: Dosen,
   'jadwal'?: Jadwal
 }
@@ -64,4 +81,23 @@ export interface Semester {
   semester: string,
   tahun_ajaran_pertama: number,
   tahun_ajaran_kedua: number,
+}
+export type Paginator<T> = {
+  data: T[],
+  links: {
+    first: string,
+    last: string,
+    next?: string | null,
+    prev?: string | null,
+  },
+  meta: {
+    current_page: number,
+    from: number,
+    last_page: number,
+    links: Array,
+    path: string,
+    per_page: number,
+    to: number,
+    total: number,
+  }
 }

@@ -17,23 +17,26 @@ const confirmLogout = ref(false)
     class="sidebar w-72 text-white bg-primary rounded-r-[3rem] fixed left-0 top-0 bottom-0 px-8 py-8 max-h-screen flex flex-col transition-all duration-200 z-20"
     :class="!show ? '-ml-72 lg:ml-0' : 'ml-0'">
     <div>
-      <img :src="page.props.auth.user.profile_picture ?? '/user.png'" alt=""
-        class="size-28 rounded-full mx-auto max-w-full">
+      <img :src="page.props.auth.user.profile_picture ?? '/user-2.png'" alt=""
+        class="size-20 rounded-full mx-auto max-w-full">
       <h3 class="mt-6 mb-2 text-center font-medium">{{ username }}</h3>
       <p class="text-center font-medium">{{ role }}</p>
       <hr class="h-0.5 bg-white my-4">
     </div>
     <div class="mt-5 flex flex-col justify-between grow">
       <div>
-        <SidebarLink menu="Dashboard" href="/" :active="page.url == '/'" />
+        <SidebarLink menu="Dashboard" href="/" :active="page.url == '/' || page.url.startsWith('/?')" />
         <SidebarLink menu="Activity" href="/activities" v-if="role == 'Admin'"
           :active="page.url.startsWith('/activities')" />
-        <SidebarLink menu="Schedule" href="/schedules" :active="page.url.startsWith('/schedules')" />
+        <SidebarLink menu="Schedule" href="/schedules"
+          :active="(role == 'Dosen' ? page.url.startsWith('/activities') : false) || page.url.startsWith('/schedules')" />
         <SidebarLink menu="KRS" href="/krs" v-if="role == 'Mahasiswa'" :active="page.url.startsWith('/krs')" />
         <SidebarLink menu="Mata Kuliah" href="/mata-kuliah" v-if="role == 'Admin'"
           :active="page.url.startsWith('/mata-kuliah')" />
         <SidebarLink menu="Mahasiswa" href="/students" v-if="role == 'Admin'"
           :active="page.url.startsWith('/students')" />
+        <SidebarLink menu="Dosen" href="/lecturers" v-if="role == 'Admin'"
+          :active="page.url.startsWith('/lecturers')" />
       </div>
       <div class="h-full flex flex-col justify-end">
         <button class="inline-flex gap-3 items-center w-full cursor-pointer" @click="confirmLogout = true">

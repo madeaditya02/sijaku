@@ -26,9 +26,50 @@ class DashboardController extends Controller
                 'perkuliahan_belum_konfirm' => PerkuliahanResource::collection($perkuliahanHariIni->filter(fn ($kuliah) => $kuliah->status == 'Pending'))
             ]);
         } elseif ($request->user()->dosen) {
-            // Dosen
+            $waktu = $request->date ? Carbon::parse($request->date) : today();
+            $dosen = auth()->user()->dosen;
+            $perkuliahan = PerkuliahanResource::collection(Perkuliahan::whereHas('jadwal.mataKuliahTawar.dosen', function (Builder $query) use ($dosen) {
+                $query->where('nip', $dosen->nip);
+            })
+            ->where(function (Builder $query) use ($waktu) {
+                $query->whereDate('waktu_mulai', '>=', $waktu)->whereDate('waktu_mulai', '<=', $waktu->copy()->endOfDay());
+            })
+            ->orWhere(function (Builder $query) use ($waktu) {
+                $query->whereDate('rescheduled_time_start', '>=', $waktu)->whereDate('rescheduled_time_end', '<=', $waktu->copy()->endOfDay());
+            })
+            ->with(['jadwal.mataKuliahTawar', 'jadwal.ruangan'])->orderBy('waktu_mulai')->get());
+            // dd($perkuliahan);
+            $tanggal_pending = Perkuliahan::whereHas('jadwal.mataKuliahTawar.dosen', function (Builder $query) use ($dosen) {
+                $query->where('nip', $dosen->nip);
+            })->where('status', 'Pending')->distinct()->get(['waktu_mulai'])->map(fn ($kuliah) => $kuliah->waktu_mulai->format('Y-m-d'))->unique()->values();
+            // dd($tanggal_pending);
+            return Inertia::render('dashboard/DashboardDosen', [
+                'perkuliahan' => $perkuliahan,
+                'belum_diacc' => $perkuliahan->filter(fn ($kuliah) => $kuliah->status == 'Pending')->count(),
+                'activeDate' => $waktu->format('Y-m-d'),
+                'tanggal_pending' => $tanggal_pending
+            ]);
         } else {
-            return Inertia::render('dashboard/DashboardMahasiswa');
+            $smt = semesterIni();
+            $nim = auth()->user()->mahasiswa->nim;
+            $kuliahSemester = PerkuliahanResource::collection(Perkuliahan::with(['jadwal.mataKuliahTawar.krs'])->whereHas('jadwal.mataKuliahTawar.krs', function ($query) use ($nim) {
+                $query->where('mahasiswa.nim', $nim);
+            })->whereHas('jadwal.mataKuliahTawar', function ($query) use ($smt) {
+                $query->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua']);
+            })->get());
+            // dd($kuliahSemester);
+            $start = now()->startOfDay();
+            $end = now()->endOfDay();
+            $kuliahHariIni = PerkuliahanResource::collection(Perkuliahan::whereHas('jadwal.mataKuliahTawar.krs', function ($query) use ($nim) {
+                $query->where('mahasiswa.nim', $nim);
+            })->where(function ($q) use ($start, $end) {
+                $q->where(fn ($query) => $query->whereDate('waktu_mulai', '>=', $start)->whereDate('waktu_mulai', '<=', $end))
+                ->orWhere(fn ($query) => $query->whereDate('rescheduled_time_start', '>=', $start)->whereDate('rescheduled_time_end', '<=', $end))->orderBy('waktu_mulai')->orderBy('rescheduled_time_start')->get();
+            })->orderBy('waktu_mulai')->orderBy('rescheduled_time_start')->get());
+            return Inertia::render('dashboard/DashboardMahasiswa', [
+                'kuliahSemester' => $kuliahSemester,
+                'kuliahHariIni' => $kuliahHariIni,
+            ]);
         }
     }
 

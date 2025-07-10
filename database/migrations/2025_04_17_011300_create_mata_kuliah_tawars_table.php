@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('kelas');
             $table->enum('semester', ['Ganjil', 'Genap']);
             $table->string('dosen_ketua');
+            $table->integer('kuota');
             $table->timestamps();
             $table->foreign('id_matkul')->references('kode')->on('mata_kuliah')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('dosen_ketua')->references('nip')->on('dosen')->onUpdate('cascade')->onDelete('cascade');
