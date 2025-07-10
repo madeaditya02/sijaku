@@ -73,12 +73,16 @@ class KRSController extends Controller
         // } else {
         // }
         $smt = semesterIni();
-        $query = $request->only(['search', 'show']);
+        $query = ['search' => $request->get('search', ''), 'show' => $request->get('show', 10)];
         // dd($smt);
         $matkulKRS = MataKuliahTawar::where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->whereHas('krs', function ($query) {
             $query->where('mahasiswa.nim', auth()->user()->mahasiswa->nim);
         })->select(['id'])->get()->pluck('id');
-        $listMatkul = MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->withCount('krs')->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->paginate(function ($total) use ($request) {
+        $listMatkul = MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->withCount('krs')->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])
+        ->whereHas('mata_kuliah', function ($q) use ($query) {
+            $q->where('nama_matakuliah', 'like', '%'.$query['search'].'%')->orWhere('kode', 'like', '%'.$query['search'].'%');
+        })
+        ->paginate(function ($total) use ($request) {
             $perPage = $request->get('show', 10);
             if($perPage == 'all')
                 return $total;

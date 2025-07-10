@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create(['email' => 'imadeaditya4@gmail.com']); // Mahasiswa
-        User::factory()->create(['email' => 'christian@gmail.com']); // Mahasiswa
+        // User::factory()->create(['email' => 'christian@gmail.com']); // Mahasiswa
         User::factory()->create(['email' => 'gekani@gmail.com']); // Dosen
         User::factory()->create(['email' => 'mutia@gmail.com']); // Dosen
         $admin = User::factory()->create(['email' => 'intan@gmail.com']); // Admin
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             'nama' => 'Christian Valentino',
             'nim' => '2308561016',
             'agama' => 'Kristen',
-            'user_id' => 2
+            'user_id' => null
         ]);
 
         $dosen1 = Dosen::create([
@@ -47,14 +47,14 @@ class DatabaseSeeder extends Seeder
             'nama' => 'Riyani Astarani S.Kom., M.Kom.',
             'jenis_kelamin' => 'Perempuan',
             'nomor_telpon' => '08973891362',
-            'user_id' => 3
+            'user_id' => 2
         ]);
         $dosen2 = Dosen::create([
             'nip' => '112',
             'nama' => 'Mutia',
             'jenis_kelamin' => 'Perempuan',
             'nomor_telpon' => '08973891362',
-            'user_id' => 4
+            'user_id' => 3
         ]);
 
         Admin::create([
@@ -156,18 +156,18 @@ class DatabaseSeeder extends Seeder
             'id_ruangan' => 6,
         ]);
 
-        $tanggal = "2023-09-01";
-        $date = Carbon::parse($tanggal);
-        $sunday = $date->copy()->startOfWeek(Carbon::SUNDAY);
-        // Kalau bulan Senin itu beda dengan bulan tanggal input, cari Senin berikutnya
-        if ($sunday->month !== $date->month) {
-            $sunday = $sunday->addWeek();
-        }
         foreach ($jadwal as $jdw) {
+            $jdw->load('mataKuliahTawar');
+            $date = Carbon::parse($jdw->mataKuliahTawar->semester == "Ganjil" ? $jdw->mataKuliahTawar->tahun_ajaran_pertama."-09-01" : $jdw->mataKuliahTawar->tahun_ajaran_kedua."-03-01");
+            $sunday = $date->copy()->startOfWeek(Carbon::SUNDAY);
+            // Kalau bulan Senin itu beda dengan bulan tanggal input, cari Senin berikutnya
+            if ($sunday->month !== $date->month) {
+                $sunday = $sunday->copy()->addWeek();
+            }
             $startKuliah = $sunday->copy()->addDays($jdw->hari);
             $date = $startKuliah->copy();
             for ($i=0; $i < 16; $i++) {
-                $date = $date->addWeeks($i);
+                $date = $date->copy()->addWeek();
                 [$hour1, $minute1] = explode(':', $jdw->jam_mulai);
                 [$hour2, $minute2] = explode(':', $jdw->jam_selesai);
                 $timeStart = $date->copy()->setTime((int)$hour1, (int)$minute1);

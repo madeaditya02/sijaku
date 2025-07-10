@@ -14,6 +14,7 @@ const form = useForm({
   nip: '',
   nomor_telpon: '',
   jenis_kelamin: '',
+  email: '',
 })
 </script>
 <template>
@@ -34,6 +35,11 @@ const form = useForm({
         <Label for="nomor_telepon" class="mb-2">No. Telepon</Label>
         <Input id="nomor_telepon" v-model="form.nomor_telpon" placeholder="Masukkan nomor telepon" />
         <InputError :message="form.errors.nomor_telpon" class="mt-1" />
+      </div>
+      <div class="col-span-2">
+        <Label for="email" class="mb-2">Email</Label>
+        <Input id="email" type="email" v-model="form.email" placeholder="Masukkan email" />
+        <InputError :message="form.errors.email" class="mt-1" />
       </div>
       <div class="col-span-2 flex flex-col">
         <Label for="jenis_kelamin" class="mb-2">Jenis Kelamin</Label>

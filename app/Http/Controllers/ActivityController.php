@@ -119,6 +119,7 @@ class ActivityController extends Controller
             $rules['status_kegiatan'] = 'required';
         }
         $data = $request->validate($rules);
+        // dd($data);
         $activity->load(['jadwal.mataKuliahTawar.mata_kuliah']);
         if ($data['status_kehadiran'] == 'Rescheduled') {
             $waktu = Carbon::parse($data['start_date']." ".$data['start_time'].":00");
@@ -126,7 +127,12 @@ class ActivityController extends Controller
             // dd($waktu_string);
             $waktu_end = $waktu->copy()->addMinutes($activity->jadwal->mataKuliahTawar->mata_kuliah->sks * 50);
             // dd($activity->jadwal->id_jadwal);
-            $exist = Perkuliahan::where('id_jadwal', $activity->jadwal->id_jadwal)->where('waktu_mulai', '<=', $waktu_string)->where('waktu_selesai', '>', $waktu_string)->get();
+            $exist = Perkuliahan::where('id_jadwal', $activity->jadwal->id_jadwal)
+            ->where(function ($query) use ($waktu_string) {
+                $query->where('waktu_mulai', '<=', $waktu_string)->where('waktu_selesai', '>', $waktu_string)->get();
+            })->orWhere(function ($query) use ($waktu_string) {
+                $query->where('rescheduled_time_start', '<=', $waktu_string)->where('rescheduled_time_end', '>', $waktu_string)->get();
+            });
             if ($exist->count()) {
                 return back()->withErrors(['start_date' => 'Terdapat kelas lain di waktu tersebut']);
                 // return redirect("/activities/$activity->id")->with('alert', ['title' => 'Status Gagal Diperbarui', 'text' => 'Tidak bisa mereschedule kelas. Terdapat mata kuliah lain pada waktu tersebut.', 'type' => 'error']);
@@ -139,6 +145,7 @@ class ActivityController extends Controller
             $activity->kelas_offline = $data['status_kegiatan'] == "Offline" ? 1 : 0;
         }
         $activity->status = $data['status_kehadiran'];
+        // dd($activity);
         $activity->save();
         return redirect("/?date=".$data['start_date'])->with('alert', ['title' => 'Status Kelas Berhasil Diubah', 'text' => 'Status kehadiran perkuliahan berhasil diubah ke '.$data['status_kehadiran'], 'type' => 'success']);
     }

@@ -40,7 +40,7 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
+  // PaginationEllipsis,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
@@ -265,7 +265,7 @@ watch(showQuantity, val => {
             </PaginationItem>
           </template>
 
-          <PaginationEllipsis :index="4" />
+          <!-- <PaginationEllipsis :index="4" /> -->
 
           <PaginationNext />
         </PaginationContent>

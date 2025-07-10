@@ -38,7 +38,9 @@ class DashboardController extends Controller
                 $query->whereDate('rescheduled_time_start', '>=', $waktu)->whereDate('rescheduled_time_end', '<=', $waktu->copy()->endOfDay());
             })
             ->with(['jadwal.mataKuliahTawar', 'jadwal.ruangan'])->orderBy('waktu_mulai')->get());
-            // dd($perkuliahan);
+            $perkuliahan = $perkuliahan->filter(function ($kuliah) use ($waktu) {
+                return $kuliah->rescheduled_time_start ? $waktu->isSameDay($kuliah->rescheduled_time_start) : true;
+            });
             $tanggal_pending = Perkuliahan::whereHas('jadwal.mataKuliahTawar.dosen', function (Builder $query) use ($dosen) {
                 $query->where('nip', $dosen->nip);
             })->where('status', 'Pending')->distinct()->get(['waktu_mulai'])->map(fn ($kuliah) => $kuliah->waktu_mulai->format('Y-m-d'))->unique()->values();

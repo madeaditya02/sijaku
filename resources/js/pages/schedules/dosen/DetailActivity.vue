@@ -115,7 +115,8 @@ watch(() => formKonfirmasi.status_kehadiran, val => {
         </div>
         <div class="col-span-2">
           <Label class="mb-2">Status Kegiatan</Label>
-          <Select class="w-full" v-model="formKonfirmasi.status_kegiatan">
+          <Select class="w-full" v-model="formKonfirmasi.status_kegiatan"
+            :disabled="formKonfirmasi.status_kehadiran == 'Batal' || formKonfirmasi.status_kehadiran == 'Pending'">
             <SelectTrigger class="w-full">
               <SelectValue placeholder="Pilih Offline/Online" />
             </SelectTrigger>

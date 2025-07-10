@@ -33,6 +33,8 @@ class Perkuliahan extends Model
         return [
             'waktu_mulai' => 'datetime',
             'waktu_selesai' => 'datetime',
+            'rescheduled_time_start' => 'datetime',
+            'rescheduled_time_end' => 'datetime',
         ];
     }
 }

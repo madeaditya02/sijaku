@@ -1,3 +1,5 @@
+import { User } from "."
+
 export type StatusKelas = 'Pending' | 'Hadir' | 'Rescheduled' | 'Batal' | 'Offline' | 'Online'
 
 export interface Mahasiswa {
@@ -24,6 +26,7 @@ export interface Dosen {
 export interface DosenFull extends Dosen {
   jenis_kelamin: string
   nomor_telpon: string,
+  user: User
 }
 
 export interface Jadwal {

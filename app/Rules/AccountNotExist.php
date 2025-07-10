@@ -17,12 +17,18 @@ class AccountNotExist implements ValidationRule
     {
         if (strtolower($attribute) == 'nim') {
             $mhs = Mahasiswa::with('user')->find($value);
-            if ($mhs->user) {
+            if (!$mhs) {
+                $fail('NIM tidak ditemukan.');
+            }
+            else if ($mhs->user) {
                 $fail('NIM tersebut sudah digunakan.');
             }
         } else  if (strtolower($attribute) == 'nip') {
             $dosen = Dosen::with('user')->find($value);
-            if ($dosen->user) {
+            if (!$dosen) {
+                $fail('NIP tidak ditemukan.');
+            }
+            else if ($dosen->user) {
                 $fail('NIP tersebut sudah digunakan.');
             }
         }

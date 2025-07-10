@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Dosen;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class DosenController extends Controller
 {
@@ -39,9 +41,17 @@ class DosenController extends Controller
         $data = $request->validate([
             'nip' => ['required', 'unique:dosen', 'numeric'],
             'nama' => ['required'],
+            'email' => ['required', 'email'],
             'nomor_telpon' => ['required'],
             'jenis_kelamin' => ['required'],
         ]);
+        $user = User::create([
+            'email' => $data['email'],
+            'email_verified_at' => now(),
+            'password' => Hash::make('doseninfor'),
+        ]);
+        unset($data['email']);
+        $data['user_id'] = $user->id;
         // dd($data);
         Dosen::create($data);
         return redirect('/lecturers')->with('alert', ['title' => 'Data dosen berhasil ditambahkan.', 'type' => 'success']);
@@ -60,7 +70,7 @@ class DosenController extends Controller
      */
     public function edit(string $id)
     {
-        $dosen = Dosen::findOrFail($id);
+        $dosen = Dosen::with('user')->findOrFail($id);
         return Inertia::render('dosen/EditDosen', ['dosen' => $dosen]);
     }
 

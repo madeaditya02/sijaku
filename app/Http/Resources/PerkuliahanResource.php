@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,7 +25,7 @@ class PerkuliahanResource extends JsonResource
             'waktu_mulai_string' => $waktu_mulai->isoFormat('D MMMM YYYY'),
             'waktu_selesai_string' => $waktu_selesai->isoFormat('D MMMM YYYY'),
             'hari_tanggal' => $waktu_mulai->isoFormat('dddd, D MMMM YYYY'),
-            'jam' => $waktu_mulai->format('h:i') . " - " . $waktu_selesai->format('h:i'),
+            'jam' => $waktu_mulai->format('H:i') . " - " . $waktu_selesai->format('H:i'),
             'status' => $this->status == 'Hadir' || $this->status == 'Rescheduled' ? ($this->kelas_offline ? "Offline" : "Online") : $this->status,
             'mata_kuliah' => new MataKuliahTawarResource($this->jadwal->mataKuliahTawar),
             'ruangan' => $this->jadwal->ruangan->nama_ruangan,

@@ -4,7 +4,7 @@ import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import Pagination from '@/components/ui/pagination/Pagination.vue';
 import PaginationContent from '@/components/ui/pagination/PaginationContent.vue';
-import PaginationEllipsis from '@/components/ui/pagination/PaginationEllipsis.vue';
+// import PaginationEllipsis from '@/components/ui/pagination/PaginationEllipsis.vue';
 import PaginationItem from '@/components/ui/pagination/PaginationItem.vue';
 import PaginationNext from '@/components/ui/pagination/PaginationNext.vue';
 import PaginationPrevious from '@/components/ui/pagination/PaginationPrevious.vue';
@@ -141,7 +141,7 @@ const confirmDelete = ref<string | null>()
             </PaginationItem>
           </template>
 
-          <PaginationEllipsis :index="4" />
+          <!-- <PaginationEllipsis :index="4" /> -->
 
           <PaginationNext />
         </PaginationContent>
@@ -149,7 +149,7 @@ const confirmDelete = ref<string | null>()
     </div>
 
     <ConfirmModal :open="!!confirmDelete" @update-open="opened => confirmDelete = (!opened ? null : confirmDelete)"
-      title="Hapus Data Mahasiswa" :text="`Anda yakin ingin menghapus data mata kuliah dengan kode ${confirmDelete}?`"
+      title="Hapus Data Mata Kuliah" :text="`Anda yakin ingin menghapus data mata kuliah dengan kode ${confirmDelete}?`"
       confirm-button="Hapus" @confirm="router.delete(`/mata-kuliah/${confirmDelete}`, {
         onSuccess: () => {
           toast.success('Data mata kuliah berhasil dihapus')

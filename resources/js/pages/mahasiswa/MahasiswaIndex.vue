@@ -4,7 +4,7 @@ import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import Pagination from '@/components/ui/pagination/Pagination.vue';
 import PaginationContent from '@/components/ui/pagination/PaginationContent.vue';
-import PaginationEllipsis from '@/components/ui/pagination/PaginationEllipsis.vue';
+// import PaginationEllipsis from '@/components/ui/pagination/PaginationEllipsis.vue';
 import PaginationItem from '@/components/ui/pagination/PaginationItem.vue';
 import PaginationNext from '@/components/ui/pagination/PaginationNext.vue';
 import PaginationPrevious from '@/components/ui/pagination/PaginationPrevious.vue';
@@ -137,7 +137,7 @@ const confirmDelete = ref<string | null>()
             </PaginationItem>
           </template>
 
-          <PaginationEllipsis :index="4" />
+          <!-- <PaginationEllipsis :index="4" /> -->
 
           <PaginationNext />
         </PaginationContent>

@@ -30,9 +30,10 @@ const onClickItem = (item: any) => {
 	console.log(item)
 }
 
-const items: ICalendarItem[] = props.kuliahSemester.map(kuliah => ({
+const items: ICalendarItem[] = props.kuliahSemester.filter(kuliah => kuliah.status == 'Offline' || kuliah.status == 'Online').map(kuliah => ({
 	id: kuliah.id_kuliah,
 	startDate: moment(kuliah.waktu_mulai).toDate(),
+	classes: kuliah.status == 'Offline' ? ["active-blue"] : [],
 	// endDate: moment(kuliah.waktu_selesai).startOf.toDate(),
 	title: kuliah.mata_kuliah.nama_matkul,
 }))
@@ -107,9 +108,13 @@ const setShowDate = (d: Date) => {
 		<h2 class="text-2xl font-medium text-center" v-else>Tidak ada perkuliahan hari ini</h2>
 	</AppLayout>
 </template>
-<style scoped>
+<style>
 .jadwal-today td,
 .jadwal-today th {
 	padding: 16px 24px;
+}
+
+.cv-item.active-blue {
+	background-color: #D8EFFF;
 }
 </style>
