@@ -6,6 +6,8 @@ use Inertia\Inertia;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelPdf\Facades\Pdf;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\MahasiswaResource;
 
 class MahasiswaController extends Controller
@@ -98,5 +100,17 @@ class MahasiswaController extends Controller
     {
         Mahasiswa::destroy($id);
         return redirect('/students')->with('alert', ['title' => 'Data Mahasiswa berhasil dihapus.', 'type' => 'success']);
+    }
+
+    public function print()
+    {
+        $list = Mahasiswa::all();
+        Pdf::view('print.mahasiswa', ['list' => $list])
+        ->disk('public')
+        ->format('a4')
+        ->headerView('print.header')
+        ->margins(30, 25, 30, 25)
+        ->save('/laporan/Laporan Mahasiswa.pdf');
+        return Storage::disk('public')->download('/laporan/Laporan Mahasiswa.pdf');
     }
 }

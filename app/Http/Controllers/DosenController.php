@@ -6,7 +6,9 @@ use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Dosen;
 use Illuminate\Http\Request;
+use Spatie\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DosenController extends Controller
 {
@@ -98,5 +100,17 @@ class DosenController extends Controller
     {
         Dosen::destroy($id);
         return redirect('/lecturers')->with('alert', ['title' => 'Data dosen berhasil dihapus.', 'type' => 'success']);
+    }
+
+    public function print()
+    {
+        $list = Dosen::all();
+        Pdf::view('print.dosen', ['list' => $list])
+        ->disk('public')
+        ->format('a4')
+        ->headerView('print.header')
+        ->margins(30, 25, 30, 25)
+        ->save('/laporan/Laporan Dosen.pdf');
+        return Storage::disk('public')->download('/laporan/Laporan Dosen.pdf');
     }
 }

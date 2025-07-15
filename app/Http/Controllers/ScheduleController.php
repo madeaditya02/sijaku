@@ -8,13 +8,17 @@ use Inertia\Inertia;
 use App\Models\Dosen;
 use App\Models\Jadwal;
 use App\Models\Ruangan;
+use App\Models\Mahasiswa;
 use App\Models\MataKuliah;
 use App\Models\Perkuliahan;
 use Illuminate\Http\Request;
 use App\Models\MataKuliahTawar;
+use Illuminate\Support\Facades\DB;
+use Spatie\LaravelPdf\Facades\Pdf;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DosenResource;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\PerkuliahanResource;
 use App\Http\Resources\MataKuliahTawarResource;
 
@@ -162,5 +166,48 @@ class ScheduleController extends Controller
             'mata_kuliah' => new MataKuliahTawarResource($matkul),
             'perkuliahan' => PerkuliahanResource::collection($matkul->jadwal->perkuliahan)
         ]);
+    }
+    
+    public function download(Request $request)
+    {
+        $smt = $request->all();
+        if (isset($smt['semester']) && isset($smt['tahun_1']) && isset($smt['tahun_2'])) {
+            $smt['semester'] = $smt['semester'];
+            $smt['tahun_ajaran_pertama'] = $smt['tahun_1'];
+            $smt['tahun_ajaran_kedua'] = $smt['tahun_2'];
+        } else {
+            $smt = semesterIni();
+        }
+        $list;
+        if ($request->type == 'mata_kuliah_tawar') {
+            $list = MataKuliahTawar::with(['mata_kuliah', 'dosen', 'jadwal'])->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->get();
+        } else {
+            $list = DB::table('mata_kuliah_tawar')->join('mata_kuliah', 'mata_kuliah_tawar.id_matkul', '=', 'mata_kuliah.kode')->select('id_matkul', 'mata_kuliah.nama_matakuliah', 'mata_kuliah.semester', DB::raw('count(id_matkul) as jumlah'))->groupBy('id_matkul')->where('mata_kuliah_tawar.semester', 'Genap')->where('tahun_ajaran_pertama', 2024)->where('tahun_ajaran_kedua', 2025)->get();
+        }
+        $jumlahMhs = Mahasiswa::count();
+        $mhsKRS = Mahasiswa::whereHas('krs', function ($query) use ($smt) {
+            $query->where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua']);
+        })->count();
+        $matkul = MataKuliah::count();
+        $matkulTawar = MataKuliahTawar::where('semester', $smt['semester'])->where('tahun_ajaran_pertama', $smt['tahun_ajaran_pertama'])->where('tahun_ajaran_kedua', $smt['tahun_ajaran_kedua'])->count();
+        $fileName = $request->type == 'mata_kuliah_tawar' ?
+        'laporan/Laporan Mata Kuliah Tawar-'.$smt['semester'].'-'.$smt['tahun_ajaran_pertama'].'-'.$smt['tahun_ajaran_kedua'].'.pdf' :
+        'laporan/Laporan Mata Kuliah-'.$smt['semester'].'-'.$smt['tahun_ajaran_pertama'].'-'.$smt['tahun_ajaran_kedua'].'.pdf';
+        Pdf::view($request->type == 'mata_kuliah_tawar' ? 'print.mata-kuliah-tawar' : 'print.mata-kuliah', [
+            'list' => $list,
+            'jumlahMhs' => $jumlahMhs,
+            'mhsKRS' => $mhsKRS,
+            'matkul' => $matkul,
+            'matkulTawar' => $matkulTawar,
+            'smt' => $smt,
+        ])
+        ->disk('public')
+        ->format('a4')
+        ->headerView('print.header')
+        ->margins(30, 25, 30, 25)
+        ->save($fileName);
+        return Storage::disk('public')->download($fileName);
+        // return view('print.mata-kuliah', ['list' => $list]);
+        // return Inertia::render('Welcome');
     }
 }

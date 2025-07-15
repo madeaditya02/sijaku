@@ -12,7 +12,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { MataKuliah, Ruangan, Semester, Paginator } from '@/types/model';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { Check, Clock, Ellipsis, ExternalLink, Plus } from 'lucide-vue-next';
+import { Check, ChevronDown, Clock, Ellipsis, ExternalLink, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import {
   Table,
@@ -35,7 +35,6 @@ import {
   DialogHeader,
   DialogTitle,
   // DialogClose
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Pagination,
@@ -136,14 +135,16 @@ watch(showQuantity, val => {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Button as-child v-if="matkulSemester.data.length != 0">
-        <Link
-          :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
-        <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
-        </Link>
-      </Button>
+      <div class="text-right">
+        <Button as-child v-if="matkulSemester.data.length != 0">
+          <Link
+            :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
+          <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
+          </Link>
+        </Button>
+      </div>
     </div>
-    <div class="mt-3 flex items-center gap-2">
+    <div class="mt-3 flex items-center justify-between gap-2">
       <!-- <Label>Tampil : </Label> -->
       <Select class="bg-white" v-model="showQuantity">
         <SelectTrigger class="w-32">
@@ -159,42 +160,46 @@ watch(showQuantity, val => {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Dialog>
-        <DialogTrigger>
-          <!-- <Button variant="outline" class="w-26">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor" class="size-4">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
-            </svg>
-            Filter
-          </Button> -->
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Filter Data</DialogTitle>
-          </DialogHeader>
-          <form action="">
-            <div>
-              <Label for="">Semester</Label>
-            </div>
-            <DialogFooter>
-              <Button>Filter</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <Popover>
+        <PopoverTrigger>
+          <Button variant="tertiary">
+            <ChevronDown class="size-5 mr-1" /> Print PDF
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent class="p-0 w-48">
+          <PopoverClose class="w-full">
+            <Button class="!w-full justify-start" variant="ghost" size="lg" as-child>
+              <!-- <Clock class="size-4 mr-1.5" /> -->
+              <a
+                :href="`/schedules/download?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
+                Mata Kuliah
+              </a>
+            </Button>
+          </PopoverClose>
+          <PopoverClose class="w-full">
+            <Button class="!w-full justify-start" variant="ghost" size="lg" as-child>
+              <!-- <Clock class="size-4 mr-1.5" /> -->
+              <a
+                :href="`/schedules/download?type=mata_kuliah_tawar&semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
+                Mata Kuliah Tawar
+              </a>
+            </Button>
+          </PopoverClose>
+        </PopoverContent>
+      </Popover>
     </div>
 
     <div class="mt-20 text-center" v-if="matkulSemester.data.length == 0">
       <h2 class="text-2xl font-medium">Belum ada mata kuliah di semester ini</h2>
       <p class="text-lg mt-4 mb-6">Silahkan tambahkan mata kuliah untuk semester ini serta tentukan jadwalnya.</p>
-      <Button size="lg" as-child>
-        <Link
-          :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
-        <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
-        </Link>
-      </Button>
+      <div class="flex gap-4">
+        <Button size="lg" as-child>
+          <Link
+            :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
+          <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
+          </Link>
+        </Button>
+      </div>
     </div>
 
     <div class="mt-6 bg-white border rounded-lg" v-if="matkulSemester.data.length > 0">

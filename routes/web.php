@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::controller(ScheduleController::class)->group(function () {
         Route::get('/schedules', 'index')->name('schedules');
+        Route::get('/schedules/download', 'download');
         Route::get('/schedules/add', 'tambahMataKuliah');
         Route::post('/schedules/add', 'submitMataKuliah');
         Route::get('/schedules/{matkul}', 'detailMataKuliah');
@@ -31,7 +32,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/krs/details/{id}', 'detail');
         Route::post('/krs/ajukan/{id}', 'pilihMatkul');
     });
+    Route::get('/students/download', [MahasiswaController::class, 'print']);
     Route::resource('/students', MahasiswaController::class)->except(['show']);
+    Route::get('/lecturers/download', [DosenController::class, 'print']);
     Route::resource('/lecturers', DosenController::class)->except(['show']);
     Route::resource('/mata-kuliah', MataKuliahController::class)->except(['show']);
 });

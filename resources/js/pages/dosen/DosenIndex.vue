@@ -71,11 +71,18 @@ const confirmDelete = ref<string | null>()
           <Button variant="tertiary">Search</Button>
         </form>
       </div>
-      <Button as-child>
-        <Link href="/lecturers/create">
-        Tambah Dosen
-        </Link>
-      </Button>
+      <div class="flex gap-4 flex-wrap">
+        <Button as-child>
+          <Link href="/lecturers/create">
+          Tambah Dosen
+          </Link>
+        </Button>
+        <Button as-child variant="tertiary">
+          <a href="/lecturers/download">
+            Print PDF
+          </a>
+        </Button>
+      </div>
     </div>
     <div class="mt-6 bg-white border rounded-lg" v-if="data.data.length > 0">
       <Table>
