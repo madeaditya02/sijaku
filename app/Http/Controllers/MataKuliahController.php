@@ -76,7 +76,7 @@ class MataKuliahController extends Controller
         $mata_kuliah = MataKuliah::findOrFail($id);
         $prevKode = $request->input('prevKode');
         $data = $request->validate([
-            'kode' => ['required', 'unique:mata_kuliah,kode,'.$prevKode.',kode', 'numeric'],
+            'kode' => ['required', 'unique:mata_kuliah,kode,'.$prevKode.',kode'],
             'nama_matakuliah' => ['required'],
             'semester' => ['required', 'numeric'],
             'sks_tatap_muka' => ['required', 'numeric'],

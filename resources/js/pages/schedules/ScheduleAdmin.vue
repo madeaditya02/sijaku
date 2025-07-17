@@ -192,14 +192,12 @@ watch(showQuantity, val => {
     <div class="mt-20 text-center" v-if="matkulSemester.data.length == 0">
       <h2 class="text-2xl font-medium">Belum ada mata kuliah di semester ini</h2>
       <p class="text-lg mt-4 mb-6">Silahkan tambahkan mata kuliah untuk semester ini serta tentukan jadwalnya.</p>
-      <div class="flex gap-4">
-        <Button size="lg" as-child>
-          <Link
-            :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
-          <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
-          </Link>
-        </Button>
-      </div>
+      <Button size="lg" as-child>
+        <Link
+          :href="`/schedules/add?semester=${selectedSemester?.semester}&tahun_1=${selectedSemester?.tahun_ajaran_pertama}&tahun_2=${selectedSemester?.tahun_ajaran_kedua}`">
+        <Plus class="size-5 mr-1" /> Tambah Mata Kuliah
+        </Link>
+      </Button>
     </div>
 
     <div class="mt-6 bg-white border rounded-lg" v-if="matkulSemester.data.length > 0">
